@@ -8,11 +8,21 @@ const router = Router();
 dbconnect();
 
 
-// Get User and Messages by API KEY (ID)
-router.get('/api/:id', async (req,res)=>{
-    const id = req.params.id;
-    const response = await modelUsers.findById(id).select('name email messages');
-    res.send(response);
+router.get('/chat', async (req, res) => {
+    const apiKey = req.query.api;
+    if (!apiKey) {
+        return res.status(400).send({ error: "The 'api' parameter is mandatory." });
+    }
+    try {
+        const response = await modelUsers.findOne({ api: apiKey }).select('name email messages');
+        if (!response) {
+            return res.status(404).send({ error: "No user was found with the provided API." });
+        }
+        res.send(response);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ error: "Internal server error." });
+    }
 });
 
 
